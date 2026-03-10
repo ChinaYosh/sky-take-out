@@ -1,16 +1,19 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
+import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
+import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -20,7 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Api(tags = "员工相关")
@@ -81,6 +85,52 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setUpdateUser(BaseContext.getCurrentId());
 
         employeeMapper.insert(employee);
+
+    }
+
+    @Override
+    public PageResult selectOfPage(EmployeePageQueryDTO emp)
+    {
+        if(emp.getPage() ==  0)
+        {
+            emp.setPage(1);
+            emp.setPageSize(10);
+        }
+        PageHelper.startPage(emp.getPage(),emp.getPageSize());
+        List<Employee> array =  employeeMapper.selectByName(emp.getName());
+
+        return new PageResult(array.size(),array);
+    }
+
+    @Override
+    public Employee getById(Long id) {
+        var res =  employeeMapper.getById(id);
+        res.setPassword("*****");
+        return res;
+
+    }
+
+    @Override
+    public void update(Employee emp) {
+        emp.setUpdateTime(LocalDateTime.now());
+        emp.setUpdateUser(BaseContext.getCurrentId());
+        employeeMapper.update(emp);
+    }
+
+    @Override
+    public void update(EmployeeDTO emp)
+    {
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(emp, employee);
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(BaseContext.getCurrentId());
+        
+        // 如果 DTO 中没有 id，则使用当前登录用户的 id
+        if (employee.getId() == null) {
+            employee.setId(BaseContext.getCurrentId());
+        }
+        
+        employeeMapper.update(employee);
 
     }
 

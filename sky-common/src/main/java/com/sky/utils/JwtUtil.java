@@ -2,16 +2,17 @@ package com.sky.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
 public class JwtUtil {
-    // 使用安全密钥生成方式 - 256位密钥
-    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // 使用固定的密钥 - 256 位密钥
+    private static final String SECRET_KEY_STRING = "sky-take-out-jwt-secret-key-2026";
+    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
 
     /**
      * 生成 jwt
