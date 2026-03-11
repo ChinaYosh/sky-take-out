@@ -77,12 +77,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee();
         BeanUtils.copyProperties(emp,employee);
         employee.setStatus(StatusConstant.ENABLE);
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
         String pwd = DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()).toUpperCase();
         employee.setPassword(pwd);
-        employee.setCreateUser(BaseContext.getCurrentId());
-        employee.setUpdateUser(BaseContext.getCurrentId());
 
         employeeMapper.insert(employee);
 
@@ -112,8 +108,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void update(Employee emp) {
-        emp.setUpdateTime(LocalDateTime.now());
-        emp.setUpdateUser(BaseContext.getCurrentId());
         employeeMapper.update(emp);
     }
 
@@ -122,8 +116,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     {
         Employee employee = new Employee();
         BeanUtils.copyProperties(emp, employee);
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(BaseContext.getCurrentId());
         
         // 如果 DTO 中没有 id，则使用当前登录用户的 id
         if (employee.getId() == null) {
