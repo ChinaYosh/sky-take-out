@@ -71,6 +71,8 @@ public class AutoFileAscept
             {
                 Method setUpdateTime = object.getClass().getMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
                 Method setUpdateUser = object.getClass().getMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                setUpdateTime.invoke(object, now);
+                setUpdateUser.invoke(object, id);
             }
             catch (Exception e)
             {

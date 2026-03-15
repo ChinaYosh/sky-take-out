@@ -4,20 +4,7 @@ server:
 spring:
   profiles:
     active: dev
-  main:
-    allow-circular-references: true
-  datasource:
-    url: jdbc:mysql://localhost:3306/sky_take_out?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: 123456
-# 将文档访问路径改为 /doc.html（SpringDoc 2.3.0 专用配置）
 
-
-sky:
-  jwt:
-    admin-secret-key: itcast
-    admin-ttl: 7200000
-    admin-token-name: token
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml

@@ -19,3 +19,13 @@ logging:
         mapper: debug
         service: info
         controller: info
+sky:
+  jwt:
+    admin-secret-key: itcast
+    admin-ttl: 7200000
+    admin-token-name: token
+  alioss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    access-key-id: LTAI5tBA3YQpo4XPfsiEkPes
+    access-key-secret: WwBm59P8BJjhDmS9bUivaQxN4rOYqC
+    bucket-name: databyjavaweb
