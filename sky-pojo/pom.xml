@@ -8,25 +8,24 @@
         <groupId>com.sky</groupId>
         <artifactId>sky-take-out</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>sky-pojo</artifactId>
 
     <dependencies>
-        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!-- ✅ 关键修复：显式指定 Swagger 注解版本 -->
+        <!-- Swagger 注解 (避免代码中 @ApiModel 报错) -->
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>1.6.8</version>
         </dependency>
 
-        <!-- Jackson (用于 JSON 序列化) -->
+        <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

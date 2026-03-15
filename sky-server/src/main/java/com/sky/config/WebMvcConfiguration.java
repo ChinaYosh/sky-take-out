@@ -1,6 +1,7 @@
 package com.sky.config;
 
 import com.sky.interceptor.JwtTokenAdminInterceptor;
+import com.sky.interceptor.JwtTokenUserInterceptor;
 import com.sky.json.JacksonObjectMapper;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
     @Autowired
     private JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
+    @Autowired
+    private JwtTokenUserInterceptor jwtTokenUserInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -32,16 +35,11 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(jwtTokenAdminInterceptor)
                 .addPathPatterns("/admin/**")
                 .excludePathPatterns("/admin/employee/login");
+        registry.addInterceptor(jwtTokenUserInterceptor)
+                .addPathPatterns("/user/**")
+                .excludePathPatterns("/user/user/login");// 🌟 关键：排除微信登录接口！
     }
 
-    // ✅ 删除以下 4 行（必须删除！）
-    // @Override
-    // public void addResourceHandlers(ResourceHandlerRegistry registry) {
-    //     registry.addResourceHandler("/doc.html").addResourceLocations("classpath:/META-INF/resources/");
-    //     registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
-    // }
-
-    // ✅ 新增 OpenAPI 配置（SpringDoc 必需）
     @Bean
     public OpenAPI customOpenAPI()
     {

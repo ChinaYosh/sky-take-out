@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Spring Boot 3.2.5 -->
+    <!-- 统一由 Spring Boot 管理基础依赖 -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -12,57 +12,39 @@
         <relativePath/>
     </parent>
 
-    <!-- 项目基础信息 -->
     <groupId>com.sky</groupId>
     <artifactId>sky-take-out</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <modules>
         <module>sky-common</module>
         <module>sky-pojo</module>
         <module>sky-server</module>
     </modules>
 
-    <!-- 全局属性 -->
+    <!-- 全局版本锁定 -->
     <properties>
-        <maven.compiler.release>21</maven.compiler.release>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- 依赖版本管理 -->
-        <lombok.version>1.18.34</lombok.version>
+        <!-- 第三方组件版本 -->
+        <lombok.version>1.18.36</lombok.version>
         <fastjson.version>2.0.56</fastjson.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <mybatis.spring.version>3.0.3</mybatis.spring.version>
         <druid.version>1.2.20</druid.version>
         <pagehelper.version>1.4.7</pagehelper.version>
         <knife4j.version>3.0.3</knife4j.version>
-        <jjwt.version>0.12.6</jjwt.version>
+        <jjwt.version>0.12.5</jjwt.version>
         <aliyun-oss.version>3.18.0</aliyun-oss.version>
         <poi.version>5.2.5</poi.version>
         <wechatpay-httpclient.version>0.4.8</wechatpay-httpclient.version>
-        <!-- ❌ 移除 swagger.annotations.version (避免冲突) -->
+        <swagger-annotations.version>1.6.8</swagger-annotations.version>
     </properties>
 
-    <!-- 阿里云仓库 -->
-    <repositories>
-        <repository>
-            <id>aliyunmaven</id>
-            <url>https://maven.aliyun.com/repository/public</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>aliyunmaven</id>
-            <url>https://maven.aliyun.com/repository/public</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>false</enabled></snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <!-- 依赖版本管理 -->
+    <!-- 依赖版本声明 (子模块引入时无需写版本号) -->
     <dependencyManagement>
         <dependencies>
             <!-- 自有模块 -->
@@ -77,13 +59,7 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- 基础工具 -->
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-                <scope>compile</scope>
-            </dependency>
+            <!-- 第三方依赖 -->
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
@@ -94,8 +70,6 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
-
-            <!-- 数据库 -->
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -111,15 +85,6 @@
                 <artifactId>pagehelper-spring-boot-starter</artifactId>
                 <version>${pagehelper.version}</version>
             </dependency>
-
-            <!-- 接口文档 (Knife4j 3.0.3 已包含所需依赖) -->
-            <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-spring-boot-starter</artifactId>
-                <version>${knife4j.version}</version>
-            </dependency>
-
-            <!-- JWT -->
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-api</artifactId>
@@ -129,16 +94,12 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-impl</artifactId>
                 <version>${jjwt.version}</version>
-                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jjwt.version}</version>
-                <scope>runtime</scope>
             </dependency>
-
-            <!-- 核心功能 -->
             <dependency>
                 <groupId>com.aliyun.oss</groupId>
                 <artifactId>aliyun-sdk-oss</artifactId>
@@ -159,19 +120,48 @@
                 <artifactId>wechatpay-apache-httpclient</artifactId>
                 <version>${wechatpay-httpclient.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${swagger-annotations.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
-    <!-- 编译插件 -->
     <build>
         <plugins>
+            <!-- 编译插件 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <!-- 显式使用较新的编译插件以更好支持 JDK 21 -->
+                <version>3.13.0</version>
                 <configuration>
-                    <release>${maven.compiler.release}</release>
-                    <encoding>UTF-8</encoding>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <!-- 必须开启 fork，下面的 -J 参数才会生效 -->
+                    <fork>true</fork>
+                    <compilerArgs>
+                        <!-- 允许 Lombok 反射访问 JDK 21 的底层编译代码 -->
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>

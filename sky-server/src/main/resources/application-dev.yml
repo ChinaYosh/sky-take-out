@@ -1,37 +1,29 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/sky_take_out?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://47.99.125.14:33099/sky_take_out?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456
+    password: 147258369
   data:
     redis:
-      host: 192.168.37.130
-      port: 6379
+      host: 47.99.125.14
+      port: 4406
       password: 123456
       database: 1
 
-mybatis:
-  mapper-locations: classpath:mapper/*.xml
-  # ✅ 重要：实体类在 sky-pojo 模块，包名是 com.sky.pojo
-  type-aliases-package: com.sky.pojo
-  configuration:
-    map-underscore-to-camel-case: true
-
-logging:
-  level:
-    com:
-      sky:
-        mapper: debug
-        service: info
-        controller: info
 sky:
   jwt:
     admin-secret-key: itcast
     admin-ttl: 7200000
     admin-token-name: token
+    user-secret-key: itheima
+    user-token-name: authentication
+    user-ttl:  7200000
   alioss:
     endpoint: oss-cn-beijing.aliyuncs.com
     access-key-id: LTAI5tBA3YQpo4XPfsiEkPes
     access-key-secret: WwBm59P8BJjhDmS9bUivaQxN4rOYqC
     bucket-name: databyjavaweb
+  wechat:
+    appid: wxd1e69dc33761c823
+    secret: 638df9e297c0aa219b90f35cf0b5313f

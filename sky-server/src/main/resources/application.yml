@@ -4,11 +4,21 @@ server:
 spring:
   profiles:
     active: dev
-
+  datasource:
+    driver-class-name: ${spring.datasource.driver-class-name}
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+  data:
+    redis:
+      host: ${spring.data.redis.host}
+      port: ${spring.data.redis.port}
+      password: ${spring.data.redis.password}
+      database: ${spring.data.redis.database}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.sky.pojo
+  type-aliases-package: com.sky.entity
   configuration:
     map-underscore-to-camel-case: true
 
@@ -19,6 +29,24 @@ logging:
         mapper: debug
         service: info
         controller: info
+
 springdoc:
   swagger-ui:
     path: /doc.html
+
+sky:
+  jwt:
+   admin-secret-key: ${sky.jwt.admin-secret-key}
+   admin-ttl: ${sky.jwt.admin-ttl}
+   admin-token-name: ${sky.jwt.admin-token-name}
+   user-secret-key: ${sky.jwt.user-secret-key}
+   user-token-name: ${sky.jwt.user-token-name}
+   user-ttl: ${sky.jwt.user-ttl}
+  alioss:
+    endpoint: ${sky.alioss.endpoint}
+    access-key-id: ${sky.alioss.access-key-id}
+    access-key-secret: ${sky.alioss.access-key-secret}
+    bucket-name: ${sky.alioss.bucket-name}
+  wechat:
+    appid: ${sky.wechat.appid}
+    secret: ${sky.wechat.secret}
