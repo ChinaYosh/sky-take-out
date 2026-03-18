@@ -1,6 +1,6 @@
 package com.sky.service.admin.impl;
 
-import com.github.pagehelper.PageHelper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
@@ -12,7 +12,7 @@ import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
 import com.sky.exception.PasswordErrorException;
-import com.sky.mapper.EmployeeMapper;
+import com.sky.mapper.admin.EmployeeMapper;
 import com.sky.result.PageResult;
 import com.sky.service.admin.EmployeeService;
 import io.swagger.annotations.Api;
@@ -37,6 +37,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param employeeLoginDTO
      * @return
      */
+    @Override
     @ApiOperation("员工登录")
     public Employee login(EmployeeLoginDTO employeeLoginDTO) {
         String username = employeeLoginDTO.getUsername();
@@ -61,7 +62,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 
-        if (employee.getStatus() == StatusConstant.DISABLE) {
+        if (employee.getStatus() .equals(StatusConstant.DISABLE) ) {
             //账号被锁定
             throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
         }
@@ -90,10 +91,11 @@ public class EmployeeServiceImpl implements EmployeeService {
             emp.setPage(1);
             emp.setPageSize(10);
         }
-        PageHelper.startPage(emp.getPage(),emp.getPageSize());
-        List<Employee> array =  employeeMapper.selectByName(emp.getName());
 
-        return new PageResult(array.size(),array);
+        Page<Employee> page = new Page<>(emp.getPage(),emp.getPageSize());
+        Page array =  employeeMapper.selectByName(page,emp.getName());
+        List<Employee>  records = array.getRecords();
+        return new PageResult(records.size(),records);
     }
 
     @Override

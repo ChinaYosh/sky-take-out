@@ -30,7 +30,10 @@ public class OSSConfiguration
                 StringUtils.isEmpty(aliOssProperties.getAccessKeyId()) ||
                 StringUtils.isEmpty(aliOssProperties.getAccessKeySecret()) ||
                 StringUtils.isEmpty(aliOssProperties.getBucketName()))
+        {
             throw new RuntimeException("请配置阿里云文件上传信息");
+        }
+
             return new OSSClientBuilder().build(aliOssProperties.getEndpoint(), aliOssProperties.getAccessKeyId(), aliOssProperties.getAccessKeySecret());
     }
 

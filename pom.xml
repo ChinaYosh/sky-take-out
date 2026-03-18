@@ -30,10 +30,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- 第三方组件版本 -->
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <fastjson.version>2.0.56</fastjson.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
-        <mybatis.spring.version>3.0.3</mybatis.spring.version>
         <druid.version>1.2.20</druid.version>
         <pagehelper.version>1.4.7</pagehelper.version>
         <knife4j.version>3.0.3</knife4j.version>
@@ -69,11 +68,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mybatis.spring.boot</groupId>
-                <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>${mybatis.spring.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
@@ -134,16 +128,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <!-- 显式使用较新的编译插件以更好支持 JDK 21 -->
                 <version>3.13.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                    <!-- 必须开启 fork，下面的 -J 参数才会生效 -->
+                    <source>21</source>
+                    <target>21</target>
+                    <encoding>UTF-8</encoding>
                     <fork>true</fork>
                     <compilerArgs>
-                        <!-- 允许 Lombok 反射访问 JDK 21 的底层编译代码 -->
                         <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
                         <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
                         <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>

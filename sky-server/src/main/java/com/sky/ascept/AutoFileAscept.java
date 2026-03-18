@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Aspect
 public class AutoFileAscept
 {
-    @Pointcut("execution(* com.sky.mapper.*.*(..)) && @annotation(com.sky.annotation.AutoFile)")
+    @Pointcut("execution(* com.sky.mapper..*.*(..)) && @annotation(com.sky.annotation.AutoFile)")
     public  void AutoFilePointCut()
     {
 

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.admin.SetmealMapper">
+    <!-- 严格对齐苍穹外卖官方源码 -->
+    <insert id="insert" parameterType="com.sky.dto.SetmealDTO"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into setmeal (
+             id,
+            category_id,
+            `name`,
+            price,
+            `status`,
+            description,
+            image,
+            create_time,
+            update_time,
+            create_user,
+            update_user
+        ) values (
+            #{id},
+            #{categoryId},
+            #{name},
+            #{price},
+            #{status},
+            #{description},
+            #{image},
+            #{createTime},
+            #{updateTime},
+            #{createUser},
+            #{updateUser}
+        )
+    </insert>
+    <update id="update">
+            update setmeal
+            <set>
+
+                <if test="name != null">
+                    name = #{name},
+                </if>
+                <if test="categoryId != null">
+                    category_id = #{categoryId},
+                </if>
+                <if test="price != null">
+                    price = #{price},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+                <if test="description != null">
+                    description = #{description},
+                </if>
+                <if test="image != null">
+                    image = #{image},
+                </if>
+                <if test="updateTime != null">
+                    update_time = #{updateTime},
+                </if>
+                <if test="updateUser != null">
+                    update_user = #{updateUser},
+                </if>
+
+            </set>
+        where
+        id = #{id}
+    </update>
+    <delete id="delete">
+            delete from setmeal where id in
+            <foreach collection="ids" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+    </delete>
+
+    <select id="page" resultType="com.sky.vo.SetmealVO">
+        SELECT s.id as id,
+        s.category_id as category_id,
+        s.name as name,
+        s.price as price,
+        s.status as status,
+        s.description as description,
+        s.image as image,
+        s.update_time as update_time,
+        c.name as category_name
+        FROM setmeal s
+        LEFT JOIN category c ON c.id = s.category_id
+        <where>
+            <if test="dto.categoryId != null">
+                AND s.category_id = #{dto.categoryId}
+            </if>
+            <if test="dto.name != null and dto.name != ''">
+                AND s.name LIKE concat('%', #{dto.name}, '%')
+            </if>
+            <if test="dto.status != null">
+                AND s.status = #{dto.status}
+            </if>
+        </where>
+        ORDER BY s.update_time DESC
+    </select>
+    <select id="getDishItemBySetmealId" resultType="com.sky.entity.SetmealDish">
+         SELECT
+            sd.id,
+            sd.setmeal_id,
+            sd.dish_id,
+            sd.name,
+            sd.price,
+            sd.copies
+        FROM
+            sky_take_out.setmeal_dish sd
+        WHERE
+            sd.setmeal_id = #{id}
+    </select>
+    <insert id="insertWithFields">
+        INSERT INTO setmeal (
+            name,
+            price,
+            status,
+            category_id,
+            description,
+            image
+        ) VALUES (
+                     #{setmeal.name},
+                     #{setmeal.price},
+                     #{setmeal.status},
+                     #{setmeal.categoryId},
+                     #{setmeal.description},
+                     #{setmeal.image}
+                 )
+    </insert>
+    <insert id="insertBatch">
+        INSERT INTO setmeal_dish (
+        setmeal_id,
+        dish_id,
+        name,
+        price,
+        copies
+        )
+        VALUES
+        <foreach collection="dishes" item="dish" separator=",">
+            (#{setId}, #{dish.dishId}, #{dish.name}, #{dish.price}, #{dish.copies})
+        </foreach>
+    </insert>
+    <select id="listByCategoryId" resultType="com.sky.entity.Setmeal">
+        SELECT *
+        FROM setmeal
+        WHERE category_id = #{categoryId}
+          AND status = 1
+    </select>
+
+    <select id="listByStatus" resultType="com.sky.entity.Setmeal">
+        SELECT *
+        FROM setmeal
+        WHERE status = #{status}
+    </select>
+
+    <select id="existsById" resultType="int">
+        SELECT COUNT(*)
+        FROM setmeal
+        WHERE id = #{id}
+    </select>
+
+    <select id="getTotalCount" resultType="int">
+        SELECT COUNT(*)
+        FROM setmeal
+    </select>
+    <select id="list" resultType="com.sky.vo.SetmealVO">
+            SELECT
+                s.id,
+                s.category_id,
+                s.`name`,
+                s.price,
+                s.`status`,
+                s.description,
+                s.image,
+                s.update_time,
+                c.`name` AS category_name
+            FROM
+                sky_take_out.setmeal s
+                    LEFT JOIN
+                sky_take_out.category c
+                ON
+                    s.category_id = c.id
+            <where>
+                <if test="categoryId != null">
+                    AND s.category_id = #{categoryId}
+                </if>
+                <if test="status != null">
+                    AND s.status = #{status}
+                </if>
+                <if test="name != null">
+                    AND s.name LIKE concat('%',#{name},'%')
+                </if>
+
+            </where>
+        ORDER BY
+        s.update_time DESC
+    </select>
+    <select id="getById" resultType="com.sky.vo.SetmealVO">
+            SELECT
+                s.id,
+                s.category_id,
+                s.`name`,
+                s.price,
+                s.`status`,
+                s.description,
+                s.image,
+                s.update_time,
+                c.`name` AS category_name
+            FROM
+                sky_take_out.setmeal s
+                    LEFT JOIN
+                sky_take_out.category c
+                ON
+                    s.category_id = c.id
+            WHERE
+                s.id = #{id}
+    </select>
+</mapper>

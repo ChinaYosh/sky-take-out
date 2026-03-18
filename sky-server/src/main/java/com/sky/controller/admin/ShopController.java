@@ -19,7 +19,6 @@ public class ShopController
     public Result settStatus(@PathVariable Integer status)
     {
         log.info("设置营业状态：{}",status==1?"营业中":"打烊中");
-        // ✅ 将 Integer 转换为 String 再存储，避免 ClassCastException
         redisTemplate.opsForValue().set(KEY, status.toString());
         return Result.success();
     }

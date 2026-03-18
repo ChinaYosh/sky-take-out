@@ -1,4 +1,4 @@
-package com.sky.mapper;
+package com.sky.mapper.user;
 
 import com.sky.entity.DishFlavor;
 import org.apache.ibatis.annotations.Mapper;

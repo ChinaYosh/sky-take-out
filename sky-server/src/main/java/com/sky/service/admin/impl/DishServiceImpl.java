@@ -1,17 +1,19 @@
 package com.sky.service.admin.impl;
 
-import com.github.pagehelper.PageHelper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.annotation.AutoFile;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
+import com.sky.entity.DishFlavor;
 import com.sky.enumeration.OperationType;
 import com.sky.exception.DeletionNotAllowedException;
-import com.sky.mapper.DishFlavorMapper;
-import com.sky.mapper.DishMapper;
-import com.sky.mapper.SetmealMapper;
+import com.sky.mapper.user.DishFlavorMapper;
+import com.sky.mapper.admin.DishMapper;
+import com.sky.mapper.admin.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.admin.DishService;
 import com.sky.vo.DishVO;
@@ -20,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service("adminDishService")
@@ -70,20 +73,27 @@ public class DishServiceImpl  implements DishService
     public PageResult page(DishPageQueryDTO dishPageQueryDTO)
     {
         log.info("分页查询参数：{}", dishPageQueryDTO);
-        PageHelper.startPage(dishPageQueryDTO.getPage(),dishPageQueryDTO.getPageSize());
-        List<DishVO> list =dishMapper.page();
 
-        return new PageResult(list.size(),list);
+        //mbatis-plus分页查询
+        Page<DishVO> pageParam = new Page<>(dishPageQueryDTO.getPage(), dishPageQueryDTO.getPageSize());
+        Page<DishVO> list =dishMapper.page(pageParam,dishPageQueryDTO);
+        log.info("分页查询结果：{}", list);
+        List<DishVO> records = list.getRecords();
+        return new PageResult(list.getTotal(), records);
     }
 
     @Override
     public void delete(List<Long> id) {
         for(var it : id)
         {
-            if(dishMapper.getById(it).getStatus() == StatusConstant.ENABLE)
+            if(dishMapper.getById(it).getStatus().equals(StatusConstant.ENABLE))
+            {
                 throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
+            }
             if(setmealMapper.getByDishId(it) != null)
+            {
                 throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
+            }
         }
         dishMapper.delete(id);
         dishFlavorMapper.deleteArray(id);
@@ -131,4 +141,24 @@ public class DishServiceImpl  implements DishService
         return var;
     }
 
+    @Override
+    public List<DishVO> listWithFlavor(Dish dish)
+    {
+        List<Dish> dishList = dishMapper.list(dish);
+
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        for (Dish d : dishList) {
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d,dishVO);
+
+            //根据菜品id查询对应的口味
+            List<DishFlavor> flavors = dishFlavorMapper.getByDishId(d.getId());
+
+            dishVO.setFlavors(flavors);
+            dishVOList.add(dishVO);
+        }
+
+        return dishVOList;
+    }
 }

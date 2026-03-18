@@ -1,6 +1,7 @@
-package com.sky.mapper;
+package com.sky.mapper.admin;
 
-import com.github.pagehelper.Page;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.annotation.AutoFile;
 import com.sky.enumeration.OperationType;
 import com.sky.dto.CategoryPageQueryDTO;
@@ -8,27 +9,32 @@ import com.sky.entity.Category;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 @Mapper
-public interface CategoryMapper {
+public interface CategoryMapper extends BaseMapper<Category> {
 
     /**
      * 插入数据
      * @param category
      */
+    @Override
     @Insert("insert into category(type, name, sort, status, create_time, update_time, create_user, update_user)" +
             " VALUES" +
             " (#{type}, #{name}, #{sort}, #{status}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})")
     @AutoFile(OperationType.INSERT)
-    void insert(Category category);
+    int insert(Category category);
 
     /**
      * 分页查询
      * @param categoryPageQueryDTO
      * @return
      */
-    Page<Category> pageQuery(CategoryPageQueryDTO categoryPageQueryDTO);
+
+    Page<Category> pageQuery(@Param("page") Page<Category> page,
+                             @Param("dto") CategoryPageQueryDTO categoryPageQueryDTO);
 
     /**
      * 根据id删除分类
