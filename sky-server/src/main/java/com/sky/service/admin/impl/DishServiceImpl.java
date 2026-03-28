@@ -44,7 +44,6 @@ public class DishServiceImpl  implements DishService
         BeanUtils.copyProperties(dishDTO, dish);
         
         dishMapper.insert(dish);
-        
         // 确保获取到生成的 ID
         Long id = dish.getId();
         log.info("插入菜品后生成的 ID: {}", id);
