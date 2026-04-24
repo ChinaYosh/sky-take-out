@@ -1,16 +1,16 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://47.99.125.14:33099/aipel-hub?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
-#    url: jdbc:mysql://mysql-master:3306/sky_take_out?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    url: jdbc:mysql:// xxxxxx/aipel-hub?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+#    url: jdbc:mysql://xxxxxx/sky_take_out?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
     username: root
-    password: 147258369
+    password: xxxxxx
   data:
     redis:
 #      host: redis
-      host: 47.99.125.14
+      host: xxxxxx
 #      port: 6379
-      port: 4406
+      port:xxxxx
       password: 123456
       database: 1
 
@@ -23,14 +23,14 @@ sky:
     user-token-name: authentication
     user-ttl:  7200000
   alioss:
-    endpoint: oss-cn-beijing.aliyuncs.com
-    access-key-id: LTAI5tBA3YQpo4XPfsiEkPes
-    access-key-secret: WwBm59P8BJjhDmS9bUivaQxN4rOYqC
-    bucket-name: databyjavaweb
+    endpoint: xxxx
+    access-key-id: xxxxx
+    access-key-secret: xxxxx
+    bucket-name: xxxxxx
   wechat:
-    appid: wxd1e69dc33761c823
-    secret: 638df9e297c0aa219b90f35cf0b5313f
-    mchid: 1561414331
+    appid: xxxxxx
+    secret: xxxxxx
+    mchid: xxxx
     mch-serial-no: 4B3B3DC35414AD50B18755BAF8DE9CC7CF407606
     private-key-file-path: D:/pay/apiclient_key.pem
     api-v3-key: CZBK51236435wxpay435434323FFDuv3
