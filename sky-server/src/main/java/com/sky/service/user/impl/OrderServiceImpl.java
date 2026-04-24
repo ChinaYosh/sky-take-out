@@ -1,13 +1,15 @@
 package com.sky.service.user.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.OrdersCancelDTO;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.*;
@@ -20,7 +22,7 @@ import com.sky.mapper.user.AddressBookMapper;
 import com.sky.mapper.user.OrderDetailmapper;
 import com.sky.mapper.user.OrderMapper;
 import com.sky.result.PageResult;
-import com.sky.service.admin.WebSocketServer;
+import com.sky.service.admin.impl.WebSocketServer;
 import com.sky.service.user.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
@@ -28,11 +30,9 @@ import com.sky.vo.OrderSubmitVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +61,8 @@ public class OrderServiceImpl implements OrderService
     @Transactional(rollbackFor = Exception.class)
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO)
     {
-        AddressBook byId = addressBookMapper.selectById(ordersSubmitDTO.getAddressBookId());
-        if(byId == null)
+        AddressBook addressBook = addressBookMapper.selectById(ordersSubmitDTO.getAddressBookId());
+        if(addressBook == null)
         {
             log.error("用户地址簿数据不存在");
            throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
@@ -88,9 +88,15 @@ public class OrderServiceImpl implements OrderService
         orders.setNumber(String.valueOf(System.currentTimeMillis()));
 
         orders.setAddressBookId(ordersSubmitDTO.getAddressBookId());
-        orders.setPhone(byId.getPhone());
-        orders.setConsignee(byId.getConsignee());
-        orders.setUserId(BaseContext.getCurrentId());
+        orders.setPhone(addressBook.getPhone());
+        //地址 = 省市区
+        orders.setAddress(addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
+        orders.setConsignee(addressBook.getConsignee());
+
+        //获取名称
+        User user = userMapper.selectById(BaseContext.getCurrentId());
+        orders.setUserId(user.getId());
+        orders.setUserName(user.getName());
         orderMapper.insert(orders);
         //插入shoppingcarts
       List<OrderDetail> array = shoppingCarts.stream().map(s ->
@@ -163,7 +169,7 @@ public class OrderServiceImpl implements OrderService
         webSocketServer.sendToAllClient(json);
         log.info("订单支付成功，订单号：{}", outTradeNo);
     }
-
+    //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
     @Override
     public void reminder(Long id) {
         Orders orders = orderMapper.selectById(id);
@@ -172,7 +178,7 @@ public class OrderServiceImpl implements OrderService
             log.error("订单不存在");
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
-        if(orders.getStatus() != Orders.DELIVERY_IN_PROGRESS)
+        if(orders.getStatus() == Orders.COMPLETED || orders.getStatus() == Orders.CANCELLED)
         {
             log.error("订单状态不正确");
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
@@ -187,9 +193,121 @@ public class OrderServiceImpl implements OrderService
     }
 
     @Override
-    public PageResult history()
+    public PageResult history(OrdersPageQueryDTO ordersPageQueryDTO)
     {
-     return null;
+        log.info("{}",ordersPageQueryDTO);
+        //查询订单
+        Page<Orders> page = new Page<>(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+
+        queryWrapper.eq(Orders::getUserId,BaseContext.getCurrentId());
+        queryWrapper.eq(ordersPageQueryDTO.getStatus() != null,Orders::getStatus,ordersPageQueryDTO.getStatus());
+        queryWrapper.orderByDesc(Orders::getOrderTime);
+
+        Page<Orders> ordersPage = orderMapper.selectPage(page,queryWrapper);
+        log.info("查询订单分页信息，结果：{}", ordersPage);
+        //对订单进行更新菜品
+        List<Orders> records = ordersPage.getRecords().stream().map(order ->
+        {
+            //根据book_id设置orders
+            LambdaQueryWrapper<AddressBook> wrapper2 = new LambdaQueryWrapper<>();
+            wrapper2.eq(AddressBook::getId,order.getAddressBookId());
+
+            AddressBook addressBook = addressBookMapper.selectOne(wrapper2);
+            //省市区具体地址
+            order.setAddress(addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
+            LambdaQueryWrapper<OrderDetail> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(OrderDetail::getOrderId,order.getId());
+            queryWrapper1.orderByAsc(OrderDetail::getOrderId);
+            List<OrderDetail> orderDetails = orderDetailmapper.selectList(queryWrapper1);
+            order.setOrderDetailList(orderDetails);
+            return order;
+        }).toList();
+
+        log.info("查询订单分页信息成功，结果：{}", records);
+        return new PageResult(ordersPage.getTotal(),records);
+    }
+    //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消 7退款
+
+    @Override
+    public Orders repetition(Long id) {
+        // 1. 查询原订单
+        Orders oldOrder = orderMapper.selectById(id);
+        if (oldOrder == null) {
+            log.error("订单不存在：{}", id);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 2. 查询原订单的购物项（菜品/套餐）
+        LambdaQueryWrapper<OrderDetail> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(OrderDetail::getOrderId, id);
+        List<OrderDetail> orderDetailList = orderDetailmapper.selectList(queryWrapper);
+
+        // 3. 构建新订单（复制原订单信息）
+        Orders newOrder = new Orders();
+        BeanUtils.copyProperties(oldOrder, newOrder);
+        newOrder.setId(null);
+
+        // 4. 插入新订单
+        orderMapper.insert(newOrder);
+
+        // 5. 订单详情也复制
+        for (OrderDetail detail : orderDetailList)
+        {
+            detail.setId(null);
+            detail.setOrderId(newOrder.getId());
+        }
+        orderDetailmapper.insert(orderDetailList);
+        log.info("订单重新下单成功，新订单：{}", newOrder);
+        return newOrder;
+    }
+
+    @Override
+    public void cancel(Long id) {
+        // 1. 获取当前登录用户ID（必须加！否则任何人都能取消别人订单）
+        Long currentUserId = BaseContext.getCurrentId();
+
+        // 2. 构造查询条件：订单ID + 当前用户ID（核心修复！）
+        LambdaQueryWrapper<Orders> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.eq(Orders::getId, id)
+                .eq(Orders::getUserId, currentUserId); // 必须校验归属权
+
+        Orders orders = orderMapper.selectOne(queryWrapper);
+
+        // 3. 订单不存在 / 不属于当前用户
+        if (orders == null) {
+            log.error("订单不存在或无权限操作，订单ID：{}，用户ID：{}", id, currentUserId);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 4. 订单状态校验（只有待支付、待接单才能取消）
+        if (orders.getStatus() != Orders.PENDING_PAYMENT && orders.getStatus() != Orders.TO_BE_CONFIRMED) {
+            log.error("订单状态不允许取消，订单ID：{}，当前状态：{}", id, orders.getStatus());
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 5. 更新订单（取消）
+        LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Orders::getId, id)
+                .set(Orders::getStatus, Orders.CANCELLED)
+                .set(Orders::getCancelReason, "用户取消")
+                .set(Orders::getCancelTime, LocalDateTime.now());
+
+        orderMapper.update(null, updateWrapper); // 这里必须传第一个参数null！
+    }
+
+    @Override
+    public Orders orderDetail(Long id)
+    {
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Orders::getId,id);
+        Orders  orders = orderMapper.selectOne(queryWrapper);
+        LambdaQueryWrapper<OrderDetail> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(OrderDetail::getOrderId,id);
+        queryWrapper1.orderByAsc(OrderDetail::getOrderId);
+        orders.setOrderDetailList(orderDetailmapper.selectList(queryWrapper1));
+        orders.setOrderDishes("好吃到爆");
+        return orders;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -212,6 +330,6 @@ public class OrderServiceImpl implements OrderService
         updateOrder.eq(Orders::getId, ordersDB.getId())
                 .set(Orders::getStatus, Orders.CANCELLED)
                 .set(Orders::getCancelReason, ordersCancelDTO.getCancelReason());
-        orderMapper.update(updateOrder);
+        orderMapper.update(null,updateOrder);
     }
 }

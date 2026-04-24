@@ -33,7 +33,7 @@ public class DishController
     
     @PostMapping
 
-    @CachePut(cacheNames = "userCache" ,key = "#dishDTO.id")
+    @CachePut(cacheNames = "userCache" ,key = "#result.data.id")
     public Result<DishVO> save(@RequestBody DishDTO dishDTO)
     {
 
@@ -88,6 +88,20 @@ public class DishController
             valueOperations.set(key,list);
         }
         return Result.success(list);
+    }
+    /**
+     * 停售或起售
+     */
+    @PostMapping("/status/{status}")
+    @CacheEvict(cacheNames = "userCache" ,allEntries = true)
+    public Result startOrStop(@PathVariable Integer status, Long id)
+    {
+        log.info("起售或停售：{}", id);
+        DishDTO dish = new DishDTO();
+        dish.setStatus(status);
+        dish.setId(id);
+        dishService.update(dish);
+        return Result.success();
     }
 
 

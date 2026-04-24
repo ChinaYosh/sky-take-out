@@ -47,8 +47,8 @@ public class DishServiceImpl  implements DishService
         // 确保获取到生成的 ID
         Long id = dish.getId();
         log.info("插入菜品后生成的 ID: {}", id);
-        
-        if(dishDTO.getFlavors() != null && id != null)
+
+        if(dishDTO.getFlavors() != null && !dishDTO.getFlavors().isEmpty() && id != null)
         {
             dishFlavorMapper.insertBatch(id, dishDTO.getFlavors());
         }

@@ -16,8 +16,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class DishOverViewVO implements Serializable {
     // 已启售数量
-    private Integer sold;
+    private Long sold;
 
     // 已停售数量
-    private Integer discontinued;
+    private Long discontinued;
 }

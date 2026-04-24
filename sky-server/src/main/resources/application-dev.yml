@@ -1,12 +1,15 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://47.99.125.14:33099/sky_take_out?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    url: jdbc:mysql://47.99.125.14:33099/aipel-hub?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+#    url: jdbc:mysql://mysql-master:3306/sky_take_out?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
     username: root
     password: 147258369
   data:
     redis:
+#      host: redis
       host: 47.99.125.14
+#      port: 6379
       port: 4406
       password: 123456
       database: 1

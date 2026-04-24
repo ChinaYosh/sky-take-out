@@ -1,5 +1,9 @@
 package com.sky.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,6 +12,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 订单
@@ -16,10 +21,11 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("orders")
 public class Orders implements Serializable {
 
     /**
-     * 订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+     * 订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消 7 拒单
      */
     public static final Integer PENDING_PAYMENT = 1;
     public static final Integer TO_BE_CONFIRMED = 2;
@@ -27,6 +33,7 @@ public class Orders implements Serializable {
     public static final Integer DELIVERY_IN_PROGRESS = 4;
     public static final Integer COMPLETED = 5;
     public static final Integer CANCELLED = 6;
+    public static final Integer REJECTION = 7;
 
     /**
      * 支付状态 0未支付 1已支付 2退款
@@ -37,6 +44,7 @@ public class Orders implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @TableId(value ="id",  type = IdType.AUTO)
     private Long id;
 
     //订单号
@@ -107,4 +115,9 @@ public class Orders implements Serializable {
 
     //餐具数量状态  1按餐量提供  0选择具体数量
     private Integer tablewareStatus;
+
+    @TableField(exist = false)
+    private List<OrderDetail> orderDetailList;
+    @TableField(exist = false)
+    private String orderDishes;
 }

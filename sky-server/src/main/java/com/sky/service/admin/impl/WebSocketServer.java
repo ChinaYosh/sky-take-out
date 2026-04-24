@@ -1,4 +1,4 @@
-package com.sky.service.admin;
+package com.sky.service.admin.impl;
 
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
